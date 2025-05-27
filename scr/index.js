@@ -1,15 +1,20 @@
 // src/index.js
+import { CPU } from './cpu/index.js';
+import { MemoryBus } from './memory/index.js';
+
 console.log('GBA emulator starting…');
 
-// Grab our canvas
 const canvas = document.getElementById('screen');
 const ctx = canvas.getContext('2d');
 
-// Main loop stub
+// Instantiate core components
+const memory = new MemoryBus();
+const cpu = new CPU(memory);
+
 function frame() {
-  // TODO: step CPU, render to ctx, handle input…
+  cpu.step();          // run one instruction
+  // TODO: draw to `ctx` here
   requestAnimationFrame(frame);
 }
 
-// Kick off the loop
 requestAnimationFrame(frame);

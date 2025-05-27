@@ -6,9 +6,11 @@
   <title>GBA Emulator</title>
 </head>
 <body>
-  <!-- This is where the emulator will draw the 240×160 screen -->
   <canvas id="screen" width="240" height="160"></canvas>
-  <!-- Load our JS entry point -->
+
+  <!-- ROM loader -->
+  <input type="file" id="romInput" accept=".gba" />
+
   <script type="module" src="src/index.js"></script>
 </body>
 </html>

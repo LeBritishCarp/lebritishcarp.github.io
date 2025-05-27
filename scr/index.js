@@ -1,41 +1,56 @@
 // src/index.js
-import { CPU }       from './cpu/index.js';
+import { CPU } from './cpu/index.js';
 import { MemoryBus } from './memory/index.js';
 
-const canvas       = document.getElementById('screen');
-const ctx          = canvas.getContext('2d');
-const romInput     = document.getElementById('romInput');
-const loadRomButton = document.getElementById('loadRomButton');
+window.addEventListener('DOMContentLoaded', () => {
+  console.log('⚙️  DOM loaded, initializing emulator…');
 
-const memory = new MemoryBus();
-const cpu    = new CPU(memory);
+  const canvas        = document.getElementById('screen');
+  const ctx           = canvas.getContext('2d');
+  const romInput      = document.getElementById('romInput');
+  const loadRomButton = document.getElementById('loadRomButton');
 
-// simple frame‐loop that just draws a test background
-function frame() {
-  cpu.step();
+  console.log({ romInput, loadRomButton });
 
-  ctx.fillStyle = '#004';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const memory = new MemoryBus();
+  const cpu    = new CPU(memory);
 
-  requestAnimationFrame(frame);
-}
+  function frame() {
+    cpu.step();
 
-loadRomButton.addEventListener('click', () => {
-  const file = romInput.files[0];
-  if (!file) {
-    alert('⚠️  Please choose a .gba file first');
-    return;
+    // simple visual to prove the loop runs
+    ctx.fillStyle = '#004';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    requestAnimationFrame(frame);
   }
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    memory.loadROM(reader.result);
+  loadRomButton.addEventListener('click', () => {
+    console.log('▶️  Load ROM button clicked');
+    if (!romInput.files || romInput.files.length === 0) {
+      alert('⚠️  Please select a .gba file first.');
+      return;
+    }
 
-    // Set PC to the reset vector
-    cpu.regs[15] = 0x08000000;
+    const file = romInput.files[0];
+    console.log('📁  Selected file:', file.name);
 
-    alert('✅ ROM loaded! Starting emulation at PC=0x08000000');
-    requestAnimationFrame(frame);
-  };
-  reader.readAsArrayBuffer(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      console.log('✅  FileReader loaded, byteLength =', reader.result.byteLength);
+      memory.loadROM(reader.result);
+
+      // reset the PC to the GBA start address
+      cpu.regs[15] = 0x08000000;
+      console.log('🔁  CPU PC set to 0x08000000');
+
+      alert('✅  ROM loaded! Starting emulation…');
+      requestAnimationFrame(frame);
+    };
+    reader.onerror = (err) => {
+      console.error('❌  FileReader error', err);
+      alert('❌  Error reading ROM file');
+    };
+    reader.readAsArrayBuffer(file);
+  });
 });

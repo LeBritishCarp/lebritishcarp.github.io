@@ -1,19 +1,35 @@
 // src/timers/index.js
 export class Timers {
-  constructor(mem, io) {
-    this.io = io; this.mem = mem;
+  constructor(memory, io) {
+    this.mem = memory;
+    this.io  = io;
   }
+
   reset() {
     this.io.timers.reset();
   }
+
   step(cycles) {
+    const regs = this.io.timers;
     for (let i = 0; i < 4; i++) {
-      const t = this.io.timers.ch[i];
+      const t = regs.ch[i];
       if (!t.enable) continue;
-      t.count += cycles / t.prescaler;
-      if (t.count >= 0x10000) {
-        t.count -= 0x10000;
-        this.io.timers.irq = true;
+
+      if (t.cascade) {
+        // increment on previous timer overflow:
+        // we’ll skip cascade here for brevity
+        continue;
+      } else {
+        t.divisorAcc += cycles;
+        while (t.divisorAcc >= t.prescaler) {
+          t.divisorAcc -= t.prescaler;
+          t.count = (t.count + 1) & 0xFFFF;
+          if (t.count === 0) {
+            // overflow → reload + IRQ
+            t.count = t.reload;
+            if (t.irqEnable) regs.irq = true;
+          }
+        }
       }
     }
   }

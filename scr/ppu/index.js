@@ -1,34 +1,41 @@
 // src/ppu/index.js
 import { renderMode0 } from './mode0.js';
+import { renderMode1 } from './mode1.js';
+import { renderMode2 } from './mode2.js';
 import { renderMode3 } from './mode3.js';
+import { renderMode4 } from './mode4.js';
+import { renderMode5 } from './mode5.js';
 
 export class PPU {
-  constructor(mem, io, ctx) {
-    this.memory    = mem;
+  constructor(memory, io, ctx) {
+    this.mem       = memory;
     this.io        = io;
     this.ctx       = ctx;
     this.imageData = ctx.createImageData(240, 160);
   }
 
   reset() {
-    // nothing to clear here yet
+    // nothing to clear
   }
 
   render() {
     const dispcnt = this.io.ppu.readDISPCNT();
     const mode    = dispcnt & 0x7;
     switch (mode) {
-      case 0:
-        renderMode0(this.memory, this.io, this.imageData);
-        break;
-      case 3:
-        renderMode3(this.memory, this.imageData);
-        break;
+      case 0: renderMode0(this.mem, this.io, this.imageData); break;
+      case 1: renderMode1(this.mem, this.io, this.imageData); break;
+      case 2: renderMode2(this.mem, this.io, this.imageData); break;
+      case 3: renderMode3(this.mem, this.imageData);          break;
+      case 4: renderMode4(this.mem, this.io, this.imageData); break;
+      case 5: renderMode5(this.mem, this.io, this.imageData); break;
       default:
-        // clear to black
-        const d = this.imageData.data;
-        for (let i = 0; i < d.length; i += 4) d[i + 3] = 0;
+        this._clearBlack();
     }
     this.ctx.putImageData(this.imageData, 0, 0);
+  }
+
+  _clearBlack() {
+    const d = this.imageData.data;
+    for (let i = 0; i < d.length; i += 4) d[i + 3] = 0;
   }
 }

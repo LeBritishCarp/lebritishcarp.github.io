@@ -1,14 +1,22 @@
 // src/dma/index.js
 export class DMA {
-  constructor(memory, io) {
-    this.memory = memory;
-    this.io     = io;
+  constructor(mem, io) {
+    this.mem = mem; this.io = io;
   }
-  reset() {
-    // clear channel registers
-  }
+  reset() { /* clear DMA regs */ }
   step(cycles) {
-    // TODO: for each channel, if enabled and timing match (imm/HBlank/VBlank),
-    //       perform transfer of N words from src→dst, decrement count.
+    for (let ch = 0; ch < 4; ch++) {
+      const reg = this.io.dma.ch[ch];
+      if (!reg.enable) continue;
+      if (reg.timing === 0) {
+        // immediate
+        for (let i = 0; i < reg.count; i++) {
+          const val = this.mem.read32(reg.src + i*4);
+          this.mem.write8(reg.dst + i*4, val);
+        }
+        reg.enable = false;
+      }
+      // TODO: HBlank/VBlank/FIFO
+    }
   }
 }

@@ -1,48 +1,54 @@
 // src/apu/index.js
 export class APU {
   constructor(memory, io) {
-    this.mem = memory;
-    this.io  = io;
+    this.mem     = memory;
+    this.io      = io;
     this.context = null;
     this.node    = null;
   }
 
   reset() {
-    // If needed, tear down / restart WebAudio
-    if (this.node) {
-      this.node.disconnect();
-      this.node = null;
-    }
-    if (this.context && this.context.state !== 'closed') {
-      // keep context alive
-    }
+    // Ensure audio is started when the emulator resets
+    this._ensureAudio();
   }
 
-  // Called by your main loop once per CPU step (or batch of cycles)
   step(cycles) {
-    // TODO: implement frame-sequencer ticks (512 Hz) to clock sweeps, lengths, envelopes
-    //       update DIV-APU counters and generate new samples
+    // No per-cycle work for now; audio is driven in processAudio()
+    this._ensureAudio();
   }
 
-  // Kick off audio when the user first interacts (Autoplay policy)
-  startAudio() {
+  _ensureAudio() {
     if (!this.context) {
-      this.context = new (window.AudioContext||window.webkitAudioContext)();
+      // Kick off Web Audio on first real work
+      this.context = new (window.AudioContext || window.webkitAudioContext)();
+      // Create a ScriptProcessor to pull samples
       this.node = this.context.createScriptProcessor(1024, 0, 2);
-      this.node.onaudioprocess = this.processAudio.bind(this);
+      this.node.onaudioprocess = this._processAudio.bind(this);
       this.node.connect(this.context.destination);
     }
   }
 
-  // Fills the output buffer each time AudioContext requests more samples
-  processAudio(e) {
-    const outL = e.outputBuffer.getChannelData(0);
-    const outR = e.outputBuffer.getChannelData(1);
+  _processAudio(event) {
+    const outL = event.outputBuffer.getChannelData(0);
+    const outR = event.outputBuffer.getChannelData(1);
+
+    // Read Direct-Sound FIFO A & B as 16-bit signed samples
+    const fifoA = this.io.apu.FIFO_A; // Uint8Array[4]
+    const fifoB = this.io.apu.FIFO_B; // Uint8Array[4]
+    // sampleA = lower 16 bits; sampleB = next 16 bits
+    const sampleA = ((fifoA[0] | (fifoA[1] << 8)) << 16) >> 16;
+    const sampleB = ((fifoA[2] | (fifoA[3] << 8)) << 16) >> 16;
+    const sampleC = ((fifoB[0] | (fifoB[1] << 8)) << 16) >> 16;
+    const sampleD = ((fifoB[2] | (fifoB[3] << 8)) << 16) >> 16;
+
+    // Mix: FIFO A → Left, FIFO B → Right (basic routing)
+    // Normalize from [-32768,32767] → [-1,1]
+    const left  = sampleA / 32768;
+    const right = sampleC / 32768;
+
     for (let i = 0; i < outL.length; i++) {
-      // mix legacy channels and direct-sound here
-      outL[i] = 0;
-      outR[i] = 0;
-      // e.g. read sample from FIFO_A/B when enabled, decrement timer, etc.
+      outL[i] = left;
+      outR[i] = right;
     }
   }
 }

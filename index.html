@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Multi-Emulator</title>
   <style>
     body, html { margin:0; padding:0; height:100%; background:#000; color:#fff; font-family:sans-serif; }
@@ -15,11 +15,15 @@
   <div id="menu">
     <h1>Select Emulator</h1>
     <button class="btn" data-emu="gba">Game Boy Advance</button>
-    <!-- future: <button data-emu="gb">Game Boy</button> -->
+    <!-- future: <button class="btn" data-emu="gb">Game Boy</button> -->
   </div>
 
-  <canvas id="screen" width="240" height="160"
-          style="image-rendering:pixelated;width:480px;height:320px;"></canvas>
+  <canvas
+    id="screen"
+    width="240" height="160"
+    style="image-rendering:pixelated;width:480px;height:320px;"
+  ></canvas>
+
   <input type="file" id="romInput" accept=".gba" />
 
   <script type="module" src="src/index.js"></script>

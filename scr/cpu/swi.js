@@ -1,9 +1,8 @@
 // src/cpu/swi.js
 export function handleSWI(insn, cpu) {
-  const swiNum = insn & 0x00FFFFFF;
-  // vector to BIOS routine table at 0x00000008
+  // save return
   cpu.regs[14] = cpu.regs[15];
-  cpu.regs[15] = 0x00000008;
+  cpu.regs[15] = 0x08;    // BIOS SWI vector
   cpu.ime = false;
   return 5;
 }

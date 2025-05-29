@@ -12,7 +12,10 @@ export function renderMode3(memory, imageData) {
       const g8 = (g5 << 3) | (g5 >>> 2);
       const b8 = (b5 << 3) | (b5 >>> 2);
       const i = (y * 240 + x) * 4;
-      data[i] = r8; data[i+1] = g8; data[i+2] = b8; data[i+3] = 255;
+      data[i]   = r8;
+      data[i+1] = g8;
+      data[i+2] = b8;
+      data[i+3] = 255;
     }
   }
 }

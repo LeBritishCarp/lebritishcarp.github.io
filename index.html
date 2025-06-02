@@ -12,23 +12,20 @@
       background: #000;
       color: #fff;
       font-family: monospace;
-      -webkit-user-select: none; /* Prevent text selection on iPad */
-      overflow: hidden;           /* Avoid accidental scrolling */
+      -webkit-user-select: none;
+      overflow: hidden;
     }
 
     /* Make sure the menu (and its button) are always on top */
     #menu {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       background: #000;
-      z-index: 100; /* Very high to stay above debug log */
+      z-index: 100;
     }
 
     .btn {
@@ -40,7 +37,7 @@
       cursor: pointer;
       font-size: 1.2em;
       border-radius: 4px;
-      touch-action: manipulation; /* Improve touch responsiveness */
+      touch-action: manipulation;
     }
 
     /* Hidden until the emulator starts */
@@ -49,7 +46,7 @@
       display: none;
     }
 
-    /* The debug log sits underneath the menu */
+    /* On-screen debug log: sits below the menu */
     #debug-log {
       position: absolute;
       bottom: 0;
@@ -65,18 +62,16 @@
       box-sizing: border-box;
       white-space: pre-wrap;
       word-wrap: break-word;
-      z-index: 10; /* Lower than #menu (100) */
+      z-index: 10;
     }
   </style>
 </head>
 <body>
-  <!-- Main Menu (highest z-index) -->
   <div id="menu">
     <h1>Select Emulator</h1>
     <button class="btn" data-emu="gba">Game Boy Advance</button>
   </div>
 
-  <!-- GBA Canvas & ROM Picker (hidden until start) -->
   <canvas
     id="screen"
     width="240" height="160"
@@ -85,10 +80,8 @@
 
   <input type="file" id="romInput" accept=".gba" />
 
-  <!-- On‐screen debug log (underneath the menu) -->
   <div id="debug-log"></div>
 
   <script type="module" src="src/index.js"></script>
 </body>
 </html>
-

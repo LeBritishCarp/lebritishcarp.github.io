@@ -5,14 +5,32 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Omega Emulator</title>
   <style>
-    body, html { margin: 0; padding: 0; height: 100%; background: #000; color: #fff; font-family: monospace; }
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #000;
+      color: #fff;
+      font-family: monospace;
+      -webkit-user-select: none; /* Prevent accidental text selection on iPad */
+      overflow: hidden;           /* Avoid accidental scrolling */
+    }
+
+    /* Make sure the menu is on top of everything */
     #menu {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 100%;
+      background: #000;
+      z-index: 10; /* highest layer */
     }
+
     .btn {
       background: #222;
       padding: 1em 2em;
@@ -21,10 +39,16 @@
       color: #fff;
       cursor: pointer;
       font-size: 1.2em;
+      border-radius: 4px;
+      touch-action: manipulation; /* improve touch responsiveness */
     }
+
+    /* Hidden until emulator starts */
     #screen, #romInput {
       display: none;
     }
+
+    /* On-screen debug log: don’t steal touch/click events */
     #debug-log {
       position: absolute;
       bottom: 0;
@@ -40,15 +64,19 @@
       box-sizing: border-box;
       white-space: pre-wrap;
       word-wrap: break-word;
+      pointer-events: none; /* Let touches pass through */
+      z-index: 5; /* behind the menu button */
     }
   </style>
 </head>
 <body>
+  <!-- Main Menu -->
   <div id="menu">
     <h1>Select Emulator</h1>
     <button class="btn" data-emu="gba">Game Boy Advance</button>
   </div>
 
+  <!-- GBA Canvas & ROM Picker (hidden initially) -->
   <canvas
     id="screen"
     width="240" height="160"
@@ -57,9 +85,10 @@
 
   <input type="file" id="romInput" accept=".gba" />
 
-  <!-- On‐screen “console” to show debug messages -->
+  <!-- On-screen debug log (won’t intercept touches) -->
   <div id="debug-log"></div>
 
   <script type="module" src="src/index.js"></script>
 </body>
 </html>
+

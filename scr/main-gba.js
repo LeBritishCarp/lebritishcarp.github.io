@@ -1,22 +1,25 @@
 // src/main-gba.js
-import { CPU }       from './cpu/index.js';
-import { MemoryBus } from './memory/index.js';
-import { IO }        from './io/index.js';
-import { PPU }       from './ppu/index.js';
-import { DMA }       from './dma/index.js';
-import { Timers }    from './timers/index.js';
-import { Input }     from './input/index.js';
-import { APU }       from './apu/index.js';
-import { PPULine }   from './ppu/timing.js';
+import { log }        from './util/log.js';
+import { CPU }        from './cpu/index.js';
+import { MemoryBus }  from './memory/index.js';
+import { IO }         from './io/index.js';
+import { PPU }        from './ppu/index.js';
+import { DMA }        from './dma/index.js';
+import { Timers }     from './timers/index.js';
+import { Input }      from './input/index.js';
+import { APU }        from './apu/index.js';
+import { PPULine }    from './ppu/timing.js';
 import { saveState, loadState } from './state.js';
 
 export function startGBA() {
+  log('startGBA() called—initializing emulator…');
+
   const menu     = document.getElementById('menu');
   const canvas   = document.getElementById('screen');
   const ctx      = canvas.getContext('2d');
   const romInput = document.getElementById('romInput');
 
-  // Show UI
+  // Show emulator UI
   menu.style.display     = 'none';
   canvas.style.display   = 'block';
   romInput.style.display = 'block';
@@ -32,7 +35,7 @@ export function startGBA() {
   const apu    = new APU(memory, io);
   const raster = new PPULine(io, dma, cpu);
 
-  // Save/Load State UI
+  // Add Save/Load buttons (below canvas)
   const saveBtn = document.createElement('button');
   saveBtn.textContent = 'Save State';
   document.body.appendChild(saveBtn);
@@ -45,18 +48,26 @@ export function startGBA() {
   fileInput.type = 'file'; fileInput.accept = '.json'; fileInput.style.display = 'none';
   document.body.appendChild(fileInput);
 
-  saveBtn.addEventListener('click', () =>
-    saveState({ cpu, memory, io, ppu, dma, timers, input, apu, raster })
-  );
-  loadBtn.addEventListener('click', () => fileInput.click());
+  saveBtn.addEventListener('click', () => {
+    log('Save State button clicked');
+    saveState({ cpu, memory, io, ppu, dma, timers, input, apu, raster });
+  });
+
+  loadBtn.addEventListener('click', () => {
+    log('Load State button clicked');
+    fileInput.click();
+  });
+
   fileInput.addEventListener('change', e => {
     const f = e.target.files[0];
+    log('State file selected:', f);
     if (!f) return;
     const rdr = new FileReader();
-    rdr.onload = () => loadState(
-      { cpu, memory, io, ppu, dma, timers, input, apu, raster },
-      rdr.result
-    );
+    rdr.onload = () => {
+      log('State JSON loaded, restoring state…');
+      loadState({ cpu, memory, io, ppu, dma, timers, input, apu, raster }, rdr.result);
+      log('State restored.');
+    };
     rdr.readAsText(f);
   });
 
@@ -70,16 +81,20 @@ export function startGBA() {
     input.reset();
     apu.reset();
     raster.line = 0;
+    log('All subsystems reset.');
   }
 
   romInput.addEventListener('change', e => {
     const file = e.target.files[0];
+    log('ROM file selected:', file);
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
+      log('ROM loaded into FileReader, size:', reader.result.byteLength, 'bytes');
       resetAll();
       memory.loadROM(reader.result);
       cpu.regs[15] = 0x08000000; // reset vector
+      log('Beginning frame loop…');
       runFrame();
     };
     reader.readAsArrayBuffer(file);
@@ -104,9 +119,7 @@ export function startGBA() {
       if (currentLine < 228) {
         requestAnimationFrame(doLine);
       } else {
-        // end-of-frame: draw everything
         ppu.render();
-        currentLine = 0;
         requestAnimationFrame(doLine);
       }
     }

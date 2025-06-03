@@ -16,7 +16,7 @@
       overflow: hidden;
     }
 
-    /* Make sure the menu (and its button) are always on top */
+    /* Menu (always on top) */
     #menu {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -40,13 +40,13 @@
       touch-action: manipulation;
     }
 
-    /* Hidden until the emulator starts */
+    /* Hidden until emulator starts */
     #screen,
     #romInput {
       display: none;
     }
 
-    /* On-screen debug log: sits below the menu */
+    /* Debug log underneath menu */
     #debug-log {
       position: absolute;
       bottom: 0;
@@ -69,7 +69,8 @@
 <body>
   <div id="menu">
     <h1>Select Emulator</h1>
-    <button class="btn" data-emu="gba">Game Boy Advance</button>
+    <!-- Button label changed to “Launch GBA Emulator” -->
+    <button class="btn" data-emu="gba">Launch GBA Emulator</button>
   </div>
 
   <canvas
